@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'screens/timer_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -60,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 ),
                 const Center(child: Text('Audio Tab Data')),
-                const Center(child: Text('Timer Tab Data')),
+                const TimerScreen(),
                 const Center(child: Text('Journey Tab Data')),
               ],
             ),
