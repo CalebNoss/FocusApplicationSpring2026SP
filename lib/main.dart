@@ -6,6 +6,7 @@ void main() {
 }
 
 final native = NativeBindings();
+final controller = TextEditingController();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -92,9 +93,21 @@ class _MyHomePageState extends State<MyHomePage> {
         body: TabBarView(
           children: [
             Center(child: 
-            TextButton(
-              onPressed: native.runHello,
-              child: Text('Say hello'),
+            Column(
+              children: [
+                (
+                  TextField(
+                    controller: controller,
+                  )
+                ),
+                TextButton(
+                  onPressed: () {
+                    final text = controller.text;
+                    native.callRunHello(controller.text);
+                  },
+                  child: Text('Say hello'),
+                )
+              ]
             )),
             Center(child: Text('Audio Tab Data')),
             Center(child: Text('Timer Tab Data')),
