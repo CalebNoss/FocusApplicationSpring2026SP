@@ -13,9 +13,21 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   bool _playing = false;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
+  double _volume = 0.5;
+  bool _looping = true;
 
-  // Asset path for the rainfall audio
-  final String _assetPath = 'assets/audio/7521__abinadimeza__rainfall.wav';
+  // List of available audios
+  final List<Map<String, String>> _audios = [
+    {'name': 'Thunderstorm', 'path': 'assets/audio/346768__bwav__thunder-storm-mild-raining.mp3'},
+    {'name': 'Birds in a Tree', 'path': 'assets/audio/540936__richwise__birds-in-a-tree.mp3'},
+    {'name': 'Open Window Rain', 'path': 'assets/audio/515940__lilmati__open-windows-rain-03.mp3'},
+    {'name': 'Birds and Trains', 'path': 'assets/audio/574356__lamamakesmusic__atmo_urban_wet_birds_trains_loop.mp3'},
+    {'name': 'Wind and Rain', 'path': 'assets/audio/713953__brunoauzet__wind-and-rain-at-st-brieuc.mp3'},
+    {'name': 'City Forest After Rain', 'path': 'assets/audio/756432__garuda1982__city-forest-after-rain-with-background-noise.mp3'},
+    // Add more audios here, e.g., {'name': 'Forest', 'path': 'assets/audio/forest.mp3'}
+  ];
+
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -25,6 +37,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     });
     _player.positionStream.listen((p) => setState(() => _position = p));
     _player.durationStream.listen((d) { if (d != null) setState(() => _duration = d); });
+    _player.setVolume(_volume);
   }
 
   @override
@@ -38,11 +51,42 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       await _player.pause();
     } else {
       try {
-        await _player.setAsset(_assetPath);
-        await _player.setLoopMode(LoopMode.one);
+        await _player.setAsset(_audios[_currentIndex]['path']!);
         await _player.play();
       } catch (_) {}
     }
+  }
+
+  void _onAudioChanged(String? value) {
+    if (value != null) {
+      int index = _audios.indexWhere((audio) => audio['name'] == value);
+      if (index != -1) {
+        setState(() => _currentIndex = index);
+        _switchAudio();
+      }
+    }
+  }
+
+  Future<void> _switchAudio() async {
+    bool wasPlaying = _playing;
+    await _player.stop();
+    if (wasPlaying) {
+      try {
+        await _player.setAsset(_audios[_currentIndex]['path']!);
+        await _player.setLoopMode(_looping ? LoopMode.one : LoopMode.off);
+        await _player.play();
+      } catch (_) {}
+    }
+  }
+
+  void _onVolumeChanged(double value) {
+    setState(() => _volume = value);
+    _player.setVolume(value);
+  }
+
+  void _toggleLoop() {
+    setState(() => _looping = !_looping);
+    _player.setLoopMode(_looping ? LoopMode.one : LoopMode.off);
   }
 
   @override
@@ -51,6 +95,17 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        DropdownButton<String>(
+          value: _audios[_currentIndex]['name'],
+          items: _audios.map((audio) {
+            return DropdownMenuItem<String>(
+              value: audio['name'],
+              child: Text(audio['name']!),
+            );
+          }).toList(),
+          onChanged: _onAudioChanged,
+        ),
+        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -65,6 +120,12 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               icon: const Icon(Icons.stop),
               label: const Text('Stop'),
             ),
+            const SizedBox(width: 12),
+            IconButton(
+              onPressed: _toggleLoop,
+              icon: Icon(_looping ? Icons.repeat_one : Icons.repeat),
+              tooltip: _looping ? 'Disable Loop' : 'Enable Loop',
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -76,6 +137,17 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           )
         else
           Text('${_position.inSeconds}s'),
+        const SizedBox(height: 8),
+        Text('Volume'),
+        SizedBox(
+          width: 150,
+          child: Slider(
+            value: _volume,
+            min: 0.0,
+            max: 1.0,
+            onChanged: _onVolumeChanged,
+          ),
+        ),
       ],
     );
   }
