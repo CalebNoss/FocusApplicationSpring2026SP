@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'audio_player_widget.dart';
 import 'screens/home_screen.dart';
 import 'screens/timer_screen.dart';
 
@@ -60,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     tabController.animateTo(2); // Timer tab (0=Home,1=Audio,2=Timer)
                   },
                 ),
-                const Center(child: Text('Audio Tab Data')),
+                const Center(child: AudioPlayerWidget()),
                 const TimerScreen(),
                 const Center(child: Text('Journey Tab Data')),
               ],
