@@ -1,154 +1,213 @@
-// This imports Flutter's visual components (buttons, text fields, etc.)
+// this imports flutter's visual building blocks — things like buttons, text, colors, etc.
 import 'package:flutter/material.dart';
 
-// This imports the Supabase package so we can use login/signup/database features
+// this imports supabase so we can create accounts and save data to the database
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// This creates a shortcut variable called "supabase" so we don't have to type
-// "Supabase.instance.client" every time we want to talk to the database
+// this creates a shortcut so we can just type "supabase" instead of the full long name every time
 final supabase = Supabase.instance.client;
 
-// "StatefulWidget" means this screen can change/update its appearance
-// (e.g., showing a loading spinner when the button is pressed)
+// "StatefulWidget" means this screen is allowed to change visually while it's open
+// for example, it can show a loading spinner while waiting for supabase to respond
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key}); // "super.key" is just Flutter's way of identifying this widget
+  const SignUpScreen({super.key}); // "super.key" is just flutter's internal id system for widgets
 
   @override
-  // This links the screen to its "State" class below where all the logic lives
+  // this connects the widget to its "state" class below, which is where all the logic lives
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-// This is where all the logic and data for the Sign Up screen lives
+// this is the "state" class — think of it as the brain behind the signup screen
+// all our variables and functions live here
 class _SignUpScreenState extends State<SignUpScreen> {
 
-  // This controls and reads whatever the user types in the Email text field
+  // this reads whatever the user types into the email field
+  // "TextEditingController" is like a little listener attached to a text box
   final _emailController = TextEditingController();
 
-  // This controls and reads whatever the user types in the Password text field
+  // same thing but for the password field
   final _passwordController = TextEditingController();
 
-  // This is a true/false variable — true means we're waiting for Supabase to respond
-  // We use it to show a loading spinner while the sign up is happening
+  // this is a true/false switch — when it's true, we show the loading spinner
+  // when it's false, we show the normal "sign up" button text
   bool _isLoading = false;
 
-  // "Future<void>" means this function does something that takes time (like talking to Supabase)
-  // "async" means it will wait for each step to finish before moving to the next
+  // "Future<void>" means this function takes time to finish (it talks to the internet)
+  // "async" lets us use "await" inside, which pauses the function until each step is done
   Future<void> _signUp() async {
 
-    // Set _isLoading to true — this will show the loading spinner on the button
-    // "setState" tells Flutter "something changed, please redraw the screen"
+    // turn on the loading spinner by setting _isLoading to true
+    // "setState" tells flutter "hey, something changed — please redraw the screen"
     setState(() => _isLoading = true);
 
-    // "try" means: attempt this code, but if something goes wrong, don't crash —
-    // instead jump to the "catch" block below
+    // "try" means: attempt the following code, but if anything breaks,
+    // don't crash the app — instead run the "catch" block further down
     try {
 
-      // This calls Supabase's built-in sign up function and waits for a response
-      // ".trim()" removes any accidental spaces the user may have typed
+      // this calls supabase's built-in signup function and waits for it to finish
+      // ".trim()" removes any extra spaces the user might have accidentally typed
       final response = await supabase.auth.signUp(
-        email: _emailController.text.trim(),      // Gets the text the user typed in the email field
-        password: _passwordController.text.trim(), // Gets the text the user typed in the password field
+        email: _emailController.text.trim(),       // grab the email the user typed
+        password: _passwordController.text.trim(), // grab the password the user typed
       );
 
-      // Check if Supabase successfully created a user
-      // "response.user" will be null if something went wrong
+      // "response.user" will be null (empty) if the signup failed
+      // if it's not null, that means supabase created the account successfully
       if (response.user != null) {
 
-        // Save the new user's info into our "profiles" table in the database
-        // response.user!.id is the unique ID Supabase automatically gave this user
-        // The "!" after user means "I'm sure this isn't null, go ahead"
+        // now we save the user's info into our own "profiles" table in the database
+        // "response.user!.id" is the unique id supabase automatically assigns every user
+        // the "!" after "user" tells dart "i know this isn't null, trust me"
         await supabase.from('profiles').insert({
-          'id': response.user!.id,                    // Supabase auto-generated user ID
-          'email': _emailController.text.trim(),       // The email they signed up with
+          'id': response.user!.id,               // the unique id supabase gave this user
+          'email': _emailController.text.trim(),  // the email they signed up with
         });
 
-        // "mounted" checks that the screen is still open before trying to update it
-        // (the user could have navigated away while waiting)
+        // "mounted" checks if this screen is still open
+        // if the user navigated away while waiting, we skip the ui updates to avoid errors
         if (mounted) {
 
-          // Show a small popup message at the bottom of the screen
+          // show a little popup message at the bottom of the screen
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Account created! Please log in.')),
           );
 
-          // Go back to the previous screen (the Login screen)
+          // go back to the login screen
+          // "Navigator.pop" removes this screen and returns to the one before it
           Navigator.pop(context);
         }
       }
 
-    // "catch (e)" runs if anything in the "try" block above failed
-    // "e" contains the error message
+    // "catch (e)" runs if anything in the try block above threw an error
+    // "e" is a variable that holds the error message
     } catch (e) {
+      // only show the error if the screen is still open
       if (mounted) {
-        // Show the error message to the user in a popup
+        // show a popup with the error message so the user knows what went wrong
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')), // "$e" inserts the error text into the string
+          SnackBar(content: Text('Error: $e')), // "$e" inserts the actual error text here
         );
       }
     }
 
-    // Sign up is done (success or fail) — hide the loading spinner
+    // whether signup worked or failed, turn off the loading spinner now
     setState(() => _isLoading = false);
   }
 
-  // "build" is called every time Flutter needs to draw this screen
-  // "context" contains information about where this widget is in the app
+  // "build" is the function flutter calls every time it needs to draw this screen
+  // it returns a tree of widgets that describe what the screen looks like
   @override
   Widget build(BuildContext context) {
-    return Scaffold( // Scaffold is a basic screen layout with appBar + body
-      appBar: AppBar(title: const Text('Sign Up')), // The top bar with "Sign Up" title
 
-      body: Padding( // Padding adds space around the content so it doesn't touch the edges
-        padding: const EdgeInsets.all(24.0), // 24 pixels of space on all sides
-        child: Column( // Column stacks widgets vertically (top to bottom)
-          mainAxisAlignment: MainAxisAlignment.center, // Centers everything vertically
-          children: [
+    // "Scaffold" is a basic screen template — it gives us a background and a body area
+    return Scaffold(
+      backgroundColor: Colors.black, // set the whole screen background to black
 
-            // Big title text
-            const Text('Create Account', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+      // "body" is the main content area of the screen
+      body: Center( // "Center" puts its child in the middle of the screen
+        child: SizedBox(
+          width: 400, // limit the width so it doesn't stretch too wide on large screens
+          child: Padding(
+            padding: const EdgeInsets.all(24.0), // add 24 pixels of space on all 4 sides
+            child: Column( // "Column" stacks widgets on top of each other vertically
+              mainAxisAlignment: MainAxisAlignment.center, // vertically center everything
+              children: [
 
-            const SizedBox(height: 32), // Empty space (32 pixels tall) between widgets
+                // the big title text at the top
+                const Text(
+                  'Focus Camp',
+                  style: TextStyle(
+                    fontSize: 50,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold, // "bold" is a flutter constant, not a number like css
+                  ),
+                ),
 
-            // Email input field
-            TextField(
-              controller: _emailController, // Links this field to our email controller
-              decoration: const InputDecoration(
-                labelText: 'Email',           // Placeholder/label text inside the field
-                border: OutlineInputBorder(), // Gives the field a box border
-              ),
-              keyboardType: TextInputType.emailAddress, // Shows email-friendly keyboard on mobile
+                const SizedBox(height: 8), // a small invisible box used as a spacer (8px tall)
+
+                // subtitle text below the title
+                const Text(
+                  'Create your account',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+
+                const SizedBox(height: 48), // larger gap before the input fields
+
+                // the email text field
+                // "controller" links this field to _emailController so we can read what was typed
+                TextField(
+                  controller: _emailController,
+                  style: const TextStyle(color: Colors.white), // make the typed text white
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: TextStyle(color: Colors.grey), // the "Email" label is grey
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white38), // faint border when not focused
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white), // bright border when the user taps it
+                    ),
+                  ),
+                  keyboardType: TextInputType.emailAddress, // shows "@" on the mobile keyboard
+                ),
+
+                const SizedBox(height: 16), // gap between the two input fields
+
+                // the password text field
+                TextField(
+                  controller: _passwordController,
+                  style: const TextStyle(color: Colors.white), // make the typed text white
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: TextStyle(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white38),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                  ),
+                  obscureText: true, // hides the password text with dots — like a real password field
+                ),
+
+                const SizedBox(height: 24), // gap before the button
+
+                // "SizedBox" with double.infinity makes the button stretch the full width
+                SizedBox(
+                  width: double.infinity, // "double.infinity" means "as wide as the parent allows"
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,  // white button background
+                      foregroundColor: Colors.black,  // black text on the button
+                      padding: const EdgeInsets.symmetric(vertical: 16), // taller button
+                    ),
+                    // if _isLoading is true, pass null to disable the button
+                    // if _isLoading is false, call _signUp when the button is pressed
+                    onPressed: _isLoading ? null : _signUp,
+                    // if loading, show a spinning circle; otherwise show the "Sign Up" text
+                    child: _isLoading
+                        ? const CircularProgressIndicator() // this is the spinning loading circle
+                        : const Text('Sign Up'),
+                  ),
+                ),
+
+                const SizedBox(height: 16), // gap before the back link
+
+                // a text button at the bottom that goes back to the login screen
+                TextButton(
+                  onPressed: () {
+                    // "Navigator.pop" removes this screen and goes back to login
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Already have an account? Log In',
+                    style: TextStyle(color: Colors.grey), // grey link text to match the login screen
+                  ),
+                ),
+
+              ],
             ),
-
-            const SizedBox(height: 16), // Space between the two text fields
-
-            // Password input field
-            TextField(
-              controller: _passwordController, // Links this field to our password controller
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true, // Hides the text with dots (like a password field should)
-            ),
-
-            const SizedBox(height: 24), // Space before the button
-
-            // SizedBox with full width makes the button stretch across the whole screen
-            SizedBox(
-              width: double.infinity, // "double.infinity" means "as wide as possible"
-              child: ElevatedButton( // A raised/elevated button
-                // If _isLoading is true, pass null (disables the button)
-                // If _isLoading is false, call _signUp when pressed
-                onPressed: _isLoading ? null : _signUp,
-
-                // If loading, show a spinning circle; otherwise show "Sign Up" text
-                child: _isLoading
-                    ? const CircularProgressIndicator() // Spinning loading circle
-                    : const Text('Sign Up'),
-              ),
-            ),
-
-          ],
+          ),
         ),
       ),
     );
