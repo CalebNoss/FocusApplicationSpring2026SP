@@ -1,28 +1,20 @@
-// Imports Flutter's visual components
 import 'package:flutter/material.dart';
-
-// Imports Supabase
+import 'audio_player_widget.dart';
+import 'screens/home_screen.dart';
+import 'screens/timer_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-// Imports our Login screen so we can show it first when the app opens
 import 'login_screen.dart';
 
-// Shortcut to talk to Supabase
 final supabase = Supabase.instance.client;
 
-// "async" because we need to wait for Supabase to initialize before starting the app
 Future<void> main() async {
-
-  // Makes sure Flutter is ready before we do anything else
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Connects our app to Supabase — must happen before runApp()
   await Supabase.initialize(
-    url: 'https://mkdmmdmwhsigrkemxpbz.supabase.co',  // ← your Project URL
-    anonKey: 'sb_publishable_efuTHwIo_cSKek4N1cVDjQ_tLLAdo5w',                     // ← your Publishable API Key
+    url: 'https://mkdmmdmwhsigrkemxpbz.supabase.co',
+    anonKey: 'sb_publishable_efuTHwIo_cSKek4N1cVDjQ_tLLAdo5w',
   );
 
-  // Starts the app
   runApp(const MyApp());
 }
 
@@ -35,9 +27,59 @@ class MyApp extends StatelessWidget {
       title: 'Focus App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      // LoginScreen is now the first screen the user sees
       home: const LoginScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 4,
+      child: Builder(
+        builder: (context) {
+          final tabController = DefaultTabController.of(context);
+
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              title: Text(widget.title),
+              bottom: const TabBar(
+                tabs: [
+                  Tab(text: 'Home'),
+                  Tab(text: 'Audio'),
+                  Tab(text: 'Timer'),
+                  Tab(text: 'Journey'),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              children: [
+                HomeScreen(
+                  onStartFocus: () {
+                    tabController.animateTo(2);
+                  },
+                ),
+                const Center(child: AudioPlayerWidget()),
+                const TimerScreen(),
+                const Center(child: Text('Journey Tab Data')),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
