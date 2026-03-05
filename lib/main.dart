@@ -103,9 +103,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 TextButton(
                   onPressed: () {
                     final text = controller.text;
-                    native.callRunHello(controller.text);
+                    native.callRunStart(controller.text);
                   },
-                  child: Text('Say hello'),
+                  child: Text('Start'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final text = controller.text;
+                    native.callRunEnd(controller.text);
+                  },
+                  child: Text('End'),
                 )
               ]
             )),

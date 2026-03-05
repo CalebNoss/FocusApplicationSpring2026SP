@@ -2,23 +2,37 @@ import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'package:ffi/ffi.dart';
 
-typedef RunHelloNative = ffi.Void Function(ffi.Pointer<Utf8> text);
-typedef RunHelloDart = void Function(ffi.Pointer<Utf8> text);
+typedef RunStartNative = ffi.Void Function(ffi.Pointer<Utf8> text);
+typedef RunStartDart = void Function(ffi.Pointer<Utf8> text);
+
+typedef RunEndNative = ffi.Void Function(ffi.Pointer<Utf8> text);
+typedef RunEndDart = void Function(ffi.Pointer<Utf8> text);
 
 class NativeBindings {
-  late final RunHelloDart runHello;
+  late final RunStartDart RunStart;
+  late final RunEndDart RunEnd;
 
   NativeBindings() {
     final dll = ffi.DynamicLibrary.open("FocusAppLibrary.dll");
 
-    runHello = dll.lookupFunction<RunHelloNative, RunHelloDart>(
-      "RunHello",
+    RunStart = dll.lookupFunction<RunStartNative, RunStartDart>(
+      "RunStart",
+    );
+
+    RunEnd = dll.lookupFunction<RunEndNative, RunEndDart>(
+      "RunEnd",
     );
   }
 
-  void callRunHello(String text) {
+  void callRunStart(String text) {
     final ptr = text.toNativeUtf8();    // Dart string -> C++ const char*
-    runHello(ptr);                      //call C++ function
+    RunStart(ptr);                      //call C++ function
     malloc.free(ptr);                   //free memory
   }
+  void callRunEnd(String text) {
+    final ptr = text.toNativeUtf8();    // Dart string -> C++ const char*
+    RunEnd(ptr);                      //call C++ function
+    malloc.free(ptr);                   //free memory
+  }
+
 }
