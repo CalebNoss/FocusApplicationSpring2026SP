@@ -82,7 +82,7 @@ class _TimerScreenState extends State<TimerScreen> {
           ),
           const SizedBox(height: 20),
           const Text(
-            'Choose Focus Duration',
+            'Select Focus Duration',
             style: TextStyle(fontSize: 18),
           ),
           const SizedBox(height: 12),
@@ -95,9 +95,24 @@ class _TimerScreenState extends State<TimerScreen> {
             ],
           ),
           const SizedBox(height: 30),
-          Text(
-            timeText,
-            style: const TextStyle(fontSize: 48),
+          Container(
+            width: 220,
+            height: 220,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.deepPurple.shade200,
+                width: 8,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              timeText,
+              style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(height: 30),
           Row(
