@@ -9,6 +9,7 @@ class TimerScreen extends StatefulWidget {
 }
 
 class _TimerScreenState extends State<TimerScreen> {
+  int selectedMinutes = 25;
   int remainingSeconds = 25 * 60;
   Timer? timer;
 
@@ -32,14 +33,18 @@ class _TimerScreenState extends State<TimerScreen> {
     });
   }
 
-  void stopTimer() {
+  void resetTimer() {
     timer?.cancel();
+    setState(() {
+      remainingSeconds = selectedMinutes * 60;
+    });
   }
 
-  void resetTimer() {
-    stopTimer();
+  void selectDuration(int minutes) {
+    timer?.cancel();
     setState(() {
-      remainingSeconds = 25 * 60;
+      selectedMinutes = minutes;
+      remainingSeconds = minutes * 60;
     });
   }
 
@@ -47,6 +52,21 @@ class _TimerScreenState extends State<TimerScreen> {
   void dispose() {
     timer?.cancel();
     super.dispose();
+  }
+
+  Widget durationButton(int minutes) {
+    final bool isSelected = selectedMinutes == minutes;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: ElevatedButton(
+        onPressed: () => selectDuration(minutes),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? Colors.deepPurple[200] : null,
+        ),
+        child: Text('$minutes min'),
+      ),
+    );
   }
 
   @override
@@ -60,6 +80,20 @@ class _TimerScreenState extends State<TimerScreen> {
             'Focus Timer',
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 20),
+          const Text(
+            'Choose Focus Duration',
+            style: TextStyle(fontSize: 18),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              durationButton(15),
+              durationButton(25),
+              durationButton(45),
+            ],
+          ),
           const SizedBox(height: 30),
           Text(
             timeText,
@@ -70,13 +104,8 @@ class _TimerScreenState extends State<TimerScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: startTimer,
+                onPressed: timer != null && timer!.isActive ? null : startTimer,
                 child: const Text('Start'),
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: stopTimer,
-                child: const Text('Stop'),
               ),
               const SizedBox(width: 12),
               ElevatedButton(
