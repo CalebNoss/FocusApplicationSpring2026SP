@@ -70,9 +70,20 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     if (_playing) {
       await _player.pause();
     } else {
+      final selectedPath = _audios[_currentIndex]['path']!;
+      final selectedUri = Uri.parse('asset:///$selectedPath');
+      final currentSource = _player.audioSource;
+      bool shouldLoadSelected = true;
+
+      if (currentSource is UriAudioSource) {
+        shouldLoadSelected = currentSource.uri != selectedUri;
+      }
+
       try {
-        await _player.setAsset(_audios[_currentIndex]['path']!);
-        await _player.setLoopMode(_looping ? LoopMode.one : LoopMode.off);
+        if (shouldLoadSelected) {
+          await _player.setAsset(selectedPath);
+          await _player.setLoopMode(_looping ? LoopMode.one : LoopMode.off);
+        }
         await _player.play();
       } catch (_) {}
     }
@@ -134,7 +145,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         ),
         const SizedBox(height: 24),
 
-        // Play / Pause / Stop / Loop controls
+        // Play / Pause / Loop controls
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -142,16 +153,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               onPressed: _togglePlay,
               icon: Icon(_playing ? Icons.pause : Icons.play_arrow),
               label: Text(_playing ? 'Pause' : 'Play'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white12,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton.icon(
-              onPressed: () async => await _player.stop(),
-              icon: const Icon(Icons.stop),
-              label: const Text('Stop'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white12,
                 foregroundColor: Colors.white,
