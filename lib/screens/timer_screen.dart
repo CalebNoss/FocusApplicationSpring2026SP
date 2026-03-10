@@ -11,6 +11,7 @@ class TimerScreen extends StatefulWidget {
 class _TimerScreenState extends State<TimerScreen> {
   int selectedMinutes = 25;
   int remainingSeconds = 25 * 60;
+  int totalSeconds = 25 * 60;
   Timer? timer;
 
   String get timeText {
@@ -19,24 +20,53 @@ class _TimerScreenState extends State<TimerScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
+  double get progress {
+    if (totalSeconds == 0) return 0;
+    return remainingSeconds / totalSeconds;
+  }
+
   void startTimer() {
     if (timer != null && timer!.isActive) return;
 
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (remainingSeconds <= 0) {
+      if (remainingSeconds <= 1) {
         t.cancel();
+
+        setState(() {
+          remainingSeconds = 0;
+        });
+
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Focus Session Complete'),
+            content: const Text('Great job staying focused!'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  endSession();
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+
         return;
       }
+
       setState(() {
         remainingSeconds--;
       });
     });
   }
 
-  void resetTimer() {
+  void endSession() {
     timer?.cancel();
     setState(() {
       remainingSeconds = selectedMinutes * 60;
+      totalSeconds = selectedMinutes * 60;
     });
   }
 
@@ -45,6 +75,7 @@ class _TimerScreenState extends State<TimerScreen> {
     setState(() {
       selectedMinutes = minutes;
       remainingSeconds = minutes * 60;
+      totalSeconds = minutes * 60;
     });
   }
 
@@ -62,7 +93,7 @@ class _TimerScreenState extends State<TimerScreen> {
       child: ElevatedButton(
         onPressed: () => selectDuration(minutes),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? Colors.deepPurple[200] : null,
+          backgroundColor: isSelected ? Colors.deepPurple[300] : null,
         ),
         child: Text('$minutes min'),
       ),
@@ -95,23 +126,38 @@ class _TimerScreenState extends State<TimerScreen> {
             ],
           ),
           const SizedBox(height: 30),
-          Container(
-            width: 220,
-            height: 220,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.deepPurple.shade200,
-                width: 8,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              timeText,
-              style: const TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-              ),
+          SizedBox(
+            width: 230,
+            height: 230,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 220,
+                  height: 220,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 1.0, end: progress),
+                    duration: const Duration(milliseconds: 500),
+                    builder: (context, animatedValue, child) {
+                      return CircularProgressIndicator(
+                        value: animatedValue,
+                        strokeWidth: 8,
+                        backgroundColor: Colors.deepPurple.shade100,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.deepPurple.shade300,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Text(
+                  timeText,
+                  style: const TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 30),
@@ -120,12 +166,12 @@ class _TimerScreenState extends State<TimerScreen> {
             children: [
               ElevatedButton(
                 onPressed: timer != null && timer!.isActive ? null : startTimer,
-                child: const Text('Start'),
+                child: const Text('Start Session'),
               ),
               const SizedBox(width: 12),
               ElevatedButton(
-                onPressed: resetTimer,
-                child: const Text('Reset'),
+                onPressed: endSession,
+                child: const Text('End Session'),
               ),
             ],
           ),
