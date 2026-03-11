@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'native.dart';
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
@@ -10,6 +11,7 @@ final controller = TextEditingController();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  
 
   // This widget is the root of your application.
   @override
@@ -58,18 +60,29 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  late Timer _backgroundTimer;
+  bool isRunning = false;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+
+
+  @override
+  void initState() {
+    super.initState();
+    _backgroundTimer = Timer.periodic(Duration(seconds: 1), (_) => runCheck());
   }
+
+  void runCheck() {
+    if (isRunning) {
+      native.callRunMiddle(controller.text);
+    }
+  }
+
+  @override
+  void dispose() {
+    _backgroundTimer.cancel();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -104,20 +117,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {
                     final text = controller.text;
                     native.callRunStart(controller.text);
+                    isRunning = true;
                   },
                   child: Text('Start'),
                 ),
                 TextButton(
                   onPressed: () {
                     final text = controller.text;
-                    native.callRunMiddle(controller.text);
-                  },
-                  child: Text('Middle'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    final text = controller.text;
                     native.callRunEnd(controller.text);
+                    isRunning = false;
                   },
                   child: Text('End'),
                 )
