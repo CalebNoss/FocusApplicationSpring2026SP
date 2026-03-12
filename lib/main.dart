@@ -1,4 +1,4 @@
-iimport 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/timer_screen.dart';
 import 'screens/progress_screen.dart';
