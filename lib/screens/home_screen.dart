@@ -12,19 +12,52 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const Icon(
+            Icons.timer_outlined,
+            size: 70,
+            color: Colors.deepPurple,
+          ),
+
+          const SizedBox(height: 24),
+
           const Text(
             'Focus App',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          const SizedBox(height: 20),
+
+          const SizedBox(height: 10),
+
           const Text(
-            'Welcome back! Ready to Focus?',
-            style: TextStyle(fontSize: 18),
+            'Stay productive and distraction-free',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey,
+            ),
           ),
-          const SizedBox(height: 24),
+
+          const SizedBox(height: 40),
+
           ElevatedButton(
             onPressed: onStartFocus,
-            child: const Text('Start Focus Session'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 36,
+                vertical: 14,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              elevation: 4,
+            ),
+            child: const Text(
+              'Start Focus Session',
+              style: TextStyle(fontSize: 16),
+            ),
           ),
         ],
       ),
