@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
+import 'audio_player_widget.dart';
 import 'screens/home_screen.dart';
 import 'screens/timer_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'login_screen.dart';
 
-void main() {
+final supabase = Supabase.instance.client;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://mkdmmdmwhsigrkemxpbz.supabase.co',
+    anonKey: 'sb_publishable_efuTHwIo_cSKek4N1cVDjQ_tLLAdo5w',
+  );
+
   runApp(const MyApp());
 }
 
@@ -17,7 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Focus App'),
+      home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -57,10 +69,10 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 HomeScreen(
                   onStartFocus: () {
-                    tabController.animateTo(2); // Timer tab (0=Home,1=Audio,2=Timer)
+                    tabController.animateTo(2);
                   },
                 ),
-                const Center(child: Text('Audio Tab Data')),
+                const Center(child: AudioPlayerWidget()),
                 const TimerScreen(),
                 const Center(child: Text('Journey Tab Data')),
               ],
