@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'screens/settings_screen.dart';
 
 
 class AudioScreen extends StatelessWidget {
@@ -14,6 +15,19 @@ class AudioScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(title, style: const TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: const Center(child: AudioPlayerWidget()),
     );
@@ -31,18 +45,16 @@ class AudioPlayerWidget extends StatefulWidget {
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   final AudioPlayer _player = AudioPlayer();
   bool _playing = false;
-  Duration _position = Duration.zero;
-  Duration _duration = Duration.zero;
   double _volume = 0.5;
-  bool _looping = true;
+  int? _loadedIndex;
 
   final List<Map<String, String>> _audios = [
-    {'name': 'Thunderstorm', 'path': 'assets/audio/346768__bwav__thunder-storm-mild-raining.mp3'},
-    {'name': 'Birds in a Tree', 'path': 'assets/audio/540936__richwise__birds-in-a-tree.mp3'},
-    {'name': 'Open Window Rain', 'path': 'assets/audio/515940__lilmati__open-windows-rain-03.mp3'},
-    {'name': 'Birds and Trains', 'path': 'assets/audio/574356__lamamakesmusic__atmo_urban_wet_birds_trains_loop.mp3'},
-    {'name': 'Wind and Rain', 'path': 'assets/audio/713953__brunoauzet__wind-and-rain-at-st-brieuc.mp3'},
-    {'name': 'City Forest After Rain', 'path': 'assets/audio/756432__garuda1982__city-forest-after-rain-with-background-noise.mp3'},
+    {'name': 'Thunderstorm', 'path': 'assets/audio/346768__bwav__thunder-storm-mild-raining_with_fade.mp3'},
+    {'name': 'Birds in a Tree', 'path': 'assets/audio/540936__richwise__birds-in-a-tree_with_fade.mp3'},
+    {'name': 'Open Window Rain', 'path': 'assets/audio/515940__lilmati__open-windows-rain-03_with_fade.mp3'},
+    {'name': 'Birds and Trains', 'path': 'assets/audio/574356__lamamakesmusic__atmo_urban_wet_birds_trains_loop_with_fade.mp3'},
+    {'name': 'Wind and Rain', 'path': 'assets/audio/713953__brunoauzet__wind-and-rain-at-st-brieuc_with_fade.mp3'},
+    {'name': 'City Forest After Rain', 'path': 'assets/audio/756432__garuda1982__city-forest-after-rain-with-background-noise_with_fade.mp3'},
   ];
 
   int _currentIndex = 0;
@@ -53,10 +65,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     _player.playerStateStream.listen((state) {
       setState(() => _playing = state.playing);
     });
-    _player.positionStream.listen((p) => setState(() => _position = p));
-    _player.durationStream.listen((d) {
-      if (d != null) setState(() => _duration = d);
-    });
     _player.setVolume(_volume);
   }
 
@@ -66,26 +74,29 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     super.dispose();
   }
 
-  Future<void> _togglePlay() async {
-    if (_playing) {
-      await _player.pause();
-    } else {
-      final selectedPath = _audios[_currentIndex]['path']!;
-      final selectedUri = Uri.parse('asset:///$selectedPath');
-      final currentSource = _player.audioSource;
-      bool shouldLoadSelected = true;
+  Future<void> _loadCurrentAudio() async {
+    await _player.setAsset(_audios[_currentIndex]['path']!);
+    await _player.setLoopMode(LoopMode.one);
+    _loadedIndex = _currentIndex;
+  }
 
-      if (currentSource is UriAudioSource) {
-        shouldLoadSelected = currentSource.uri != selectedUri;
+  Future<void> _togglePlay() async {
+    try {
+      if (_playing) {
+        await _player.pause();
+        return;
       }
 
-      try {
-        if (shouldLoadSelected) {
-          await _player.setAsset(selectedPath);
-          await _player.setLoopMode(_looping ? LoopMode.one : LoopMode.off);
-        }
-        await _player.play();
-      } catch (_) {}
+      if (_loadedIndex != _currentIndex || _player.audioSource == null) {
+        await _loadCurrentAudio();
+      }
+
+      await _player.play();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Audio error: $e')),
+      );
     }
   }
 
@@ -101,14 +112,13 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
   Future<void> _switchAudio() async {
     bool wasPlaying = _playing;
-    await _player.stop();
-    if (wasPlaying) {
-      try {
-        await _player.setAsset(_audios[_currentIndex]['path']!);
-        await _player.setLoopMode(_looping ? LoopMode.one : LoopMode.off);
+    try {
+      await _loadCurrentAudio();
+      if (wasPlaying) {
+        await _player.setVolume(_volume);
         await _player.play();
-      } catch (_) {}
-    }
+      }
+    } catch (_) {}
   }
 
   void _onVolumeChanged(double value) {
@@ -116,15 +126,8 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     _player.setVolume(value);
   }
 
-  void _toggleLoop() {
-    setState(() => _looping = !_looping);
-    _player.setLoopMode(_looping ? LoopMode.one : LoopMode.off);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final total = _duration.inMilliseconds > 0 ? _duration : Duration.zero;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -145,48 +148,21 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         ),
         const SizedBox(height: 24),
 
-        // Play / Pause / Loop controls
+        // Play / Pause controls
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton.icon(
-              onPressed: _togglePlay,
-              icon: Icon(_playing ? Icons.pause : Icons.play_arrow),
-              label: Text(_playing ? 'Pause' : 'Play'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white12,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 12),
             IconButton(
-              onPressed: _toggleLoop,
+              onPressed: _togglePlay,
               icon: Icon(
-                _looping ? Icons.repeat_one : Icons.repeat,
-                color: _looping ? Colors.greenAccent : Colors.white54,
+                _playing ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                color: Colors.white,
+                size: 48,
               ),
-              tooltip: _looping ? 'Disable Loop' : 'Enable Loop',
+              tooltip: _playing ? 'Pause' : 'Play',
             ),
           ],
         ),
-        const SizedBox(height: 16),
-
-        // Progress slider
-        if (total > Duration.zero)
-          Slider(
-            value: _position.inMilliseconds.clamp(0, total.inMilliseconds).toDouble(),
-            max: total.inMilliseconds.toDouble(),
-            activeColor: Colors.white,
-            inactiveColor: Colors.white24,
-            onChanged: (v) async =>
-                await _player.seek(Duration(milliseconds: v.toInt())),
-          )
-        else
-          Text(
-            '${_position.inSeconds}s',
-            style: const TextStyle(color: Colors.white54),
-          ),
-
         const SizedBox(height: 16),
 
         // Volume control

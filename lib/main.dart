@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'audio_player_widget.dart';
 import 'screens/home_screen.dart';
+import 'screens/settings_screen.dart';
 import 'screens/timer_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
@@ -56,6 +57,19 @@ class _MyHomePageState extends State<MyHomePage> {
             appBar: AppBar(
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
               title: Text(widget.title),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  tooltip: 'Settings',
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
               bottom: const TabBar(
                 tabs: [
                   Tab(text: 'Home'),
