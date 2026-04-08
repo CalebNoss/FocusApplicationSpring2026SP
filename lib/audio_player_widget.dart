@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'screens/settings_screen.dart';
+import 'services/audio_service.dart';
 
 
 class AudioScreen extends StatelessWidget {
@@ -34,7 +34,6 @@ class AudioScreen extends StatelessWidget {
   }
 }
 
-// ... rest of your existing AudioPlayerWidget code stays below
 class AudioPlayerWidget extends StatefulWidget {
   const AudioPlayerWidget({super.key});
 
@@ -43,139 +42,88 @@ class AudioPlayerWidget extends StatefulWidget {
 }
 
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
-  final AudioPlayer _player = AudioPlayer();
-  bool _playing = false;
-  double _volume = 0.5;
-  int? _loadedIndex;
-
-  final List<Map<String, String>> _audios = [
-    {'name': 'Thunderstorm', 'path': 'assets/audio/346768__bwav__thunder-storm-mild-raining_with_fade.mp3'},
-    {'name': 'Birds in a Tree', 'path': 'assets/audio/540936__richwise__birds-in-a-tree_with_fade.mp3'},
-    {'name': 'Open Window Rain', 'path': 'assets/audio/515940__lilmati__open-windows-rain-03_with_fade.mp3'},
-    {'name': 'Birds and Trains', 'path': 'assets/audio/574356__lamamakesmusic__atmo_urban_wet_birds_trains_loop_with_fade.mp3'},
-    {'name': 'Wind and Rain', 'path': 'assets/audio/713953__brunoauzet__wind-and-rain-at-st-brieuc_with_fade.mp3'},
-    {'name': 'City Forest After Rain', 'path': 'assets/audio/756432__garuda1982__city-forest-after-rain-with-background-noise_with_fade.mp3'},
-  ];
-
-  int _currentIndex = 0;
+  final AudioService _service = AudioService.instance;
 
   @override
   void initState() {
     super.initState();
-    _player.playerStateStream.listen((state) {
-      setState(() => _playing = state.playing);
-    });
-    _player.setVolume(_volume);
+    _service.addListener(_onServiceChanged);
   }
 
   @override
   void dispose() {
-    _player.dispose();
+    _service.removeListener(_onServiceChanged);
     super.dispose();
   }
 
-  Future<void> _loadCurrentAudio() async {
-    await _player.setAsset(_audios[_currentIndex]['path']!);
-    await _player.setLoopMode(LoopMode.one);
-    _loadedIndex = _currentIndex;
-  }
-
-  Future<void> _togglePlay() async {
-    try {
-      if (_playing) {
-        await _player.pause();
-        return;
-      }
-
-      if (_loadedIndex != _currentIndex || _player.audioSource == null) {
-        await _loadCurrentAudio();
-      }
-
-      await _player.play();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Audio error: $e')),
-      );
-    }
-  }
-
-  void _onAudioChanged(String? value) {
-    if (value != null) {
-      int index = _audios.indexWhere((audio) => audio['name'] == value);
-      if (index != -1) {
-        setState(() => _currentIndex = index);
-        _switchAudio();
-      }
-    }
-  }
-
-  Future<void> _switchAudio() async {
-    bool wasPlaying = _playing;
-    try {
-      await _loadCurrentAudio();
-      if (wasPlaying) {
-        await _player.setVolume(_volume);
-        await _player.play();
-      }
-    } catch (_) {}
-  }
-
-  void _onVolumeChanged(double value) {
-    setState(() => _volume = value);
-    _player.setVolume(value);
+  void _onServiceChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final audios = AudioService.audios;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Audio selector dropdown styled for dark background
         DropdownButton<String>(
-          value: _audios[_currentIndex]['name'],
+          value: audios[_service.currentIndex]['name'],
           dropdownColor: const Color(0xFF1C1C1E),
           style: const TextStyle(color: Colors.white),
           iconEnabledColor: Colors.white,
           underline: Container(height: 1, color: Colors.white24),
-          items: _audios.map((audio) {
+          items: audios.map((audio) {
             return DropdownMenuItem<String>(
               value: audio['name'],
               child: Text(audio['name']!),
             );
           }).toList(),
-          onChanged: _onAudioChanged,
+          onChanged: (value) {
+            if (value != null) {
+              final index = audios.indexWhere((a) => a['name'] == value);
+              if (index != -1) _service.selectTrack(index);
+            }
+          },
         ),
         const SizedBox(height: 24),
 
-        // Play / Pause controls
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              onPressed: _togglePlay,
+              onPressed: () async {
+                try {
+                  await _service.togglePlay();
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Audio error: $e')),
+                  );
+                }
+              },
               icon: Icon(
-                _playing ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                _service.playing
+                    ? Icons.pause_circle_filled
+                    : Icons.play_circle_fill,
                 color: Colors.white,
                 size: 48,
               ),
-              tooltip: _playing ? 'Pause' : 'Play',
+              tooltip: _service.playing ? 'Pause' : 'Play',
             ),
           ],
         ),
         const SizedBox(height: 16),
 
-        // Volume control
         const Text('Volume', style: TextStyle(color: Colors.white70)),
         SizedBox(
           width: 200,
           child: Slider(
-            value: _volume,
+            value: _service.volume,
             min: 0.0,
             max: 1.0,
             activeColor: Colors.white,
             inactiveColor: Colors.white24,
-            onChanged: _onVolumeChanged,
+            onChanged: _service.setVolume,
           ),
         ),
       ],

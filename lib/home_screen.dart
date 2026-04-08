@@ -1,12 +1,30 @@
 import 'package:flutter/material.dart';
 import 'screens/focus_session_screen.dart';
+import 'screens/progress_screen.dart';
 import 'screens/settings_screen.dart';
+import 'widgets/audio_controls_side_panel.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _audioPanelOpen = false;
+
+  void _toggleAudioPanel() {
+    setState(() => _audioPanelOpen = !_audioPanelOpen);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final panelWidth =
+        (MediaQuery.of(context).size.width * 0.28).clamp(280.0, 360.0);
+    final panelTopPadding =
+        kToolbarHeight + MediaQuery.of(context).padding.top;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -77,19 +95,41 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
+          AudioControlsSidePanel(
+            isOpen: _audioPanelOpen,
+            panelWidth: panelWidth,
+            topPadding: panelTopPadding,
+          ),
+          // Top-right button row — rendered last so always on top of panel
           SafeArea(
             child: Align(
               alignment: Alignment.topRight,
-              child: IconButton(
-                icon: const Icon(Icons.settings, color: Colors.white),
-                tooltip: 'Settings',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const SettingsScreen(),
-                    ),
-                  );
-                },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.bar_chart, color: Colors.white),
+                    tooltip: 'Stats',
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => ProgressScreen()),
+                      );
+                    },
+                  ),
+                  AudioToggleButton(
+                    isOpen: _audioPanelOpen,
+                    onPressed: _toggleAudioPanel,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings, color: Colors.white),
+                    tooltip: 'Settings',
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
