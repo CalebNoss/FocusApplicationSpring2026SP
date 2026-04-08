@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'audio_player_widget.dart';
+import 'screens/focus_session_screen.dart';
 import 'screens/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -44,7 +44,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => AudioScreen(title: 'Deep Dive'),
+                          builder: (_) => FocusSessionScreen(experience: 'Deep Dive'),
                         ),
                       ),
                     ),
@@ -56,7 +56,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => AudioScreen(title: 'Trail Walk'),
+                          builder: (_) => FocusSessionScreen(experience: 'Trail Walk'),
                         ),
                       ),
                     ),
@@ -68,7 +68,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => AudioScreen(title: 'Peak Ascent'),
+                          builder: (_) => FocusSessionScreen(experience: 'Peak Ascent'),
                         ),
                       ),
                     ),
