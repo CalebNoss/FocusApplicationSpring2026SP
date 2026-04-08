@@ -41,15 +41,16 @@ class _TimerScreenState extends State<TimerScreen> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Focus Session Complete'),
-            content: const Text('Great job staying focused!'),
+            backgroundColor: const Color(0xFF1C1C1E),
+            title: const Text('Focus Session Complete', style: TextStyle(color: Colors.white)),
+            content: const Text('Great job staying focused!', style: TextStyle(color: Colors.white70)),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                   endSession();
                 },
-                child: const Text('Close'),
+                child: Text('Close', style: TextStyle(color: Colors.deepPurple.shade300)),
               ),
             ],
           ),
@@ -76,21 +77,22 @@ class _TimerScreenState extends State<TimerScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('End Focus Session?'),
-        content: const Text('Are you sure you want to end your session early?'),
+        backgroundColor: const Color(0xFF1C1C1E),
+        title: const Text('End Focus Session?', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure you want to end your session early?', style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('No'),
+            child: Text('No', style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               endSession();
             },
-            child: const Text(
+            child: Text(
               'Yes',
-              style: TextStyle(color: Colors.deepPurple),
+              style: TextStyle(color: Colors.deepPurple.shade300),
             ),
           ),
         ],
@@ -138,7 +140,9 @@ class _TimerScreenState extends State<TimerScreen> {
       child: ElevatedButton(
         onPressed: () => selectDuration(minutes),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? Colors.deepPurple[300] : null,
+          backgroundColor: isSelected ? Colors.deepPurple.shade300 : const Color(0xFF1C1C1E),
+          foregroundColor: isSelected ? Colors.white : Colors.white70,
+          side: isSelected ? null : const BorderSide(color: Colors.white24),
         ),
         child: Text('$minutes min'),
       ),
@@ -147,21 +151,25 @@ class _TimerScreenState extends State<TimerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
           const Text(
             'Focus Timer',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
           ),
 
           const SizedBox(height: 20),
 
           const Text(
             'Select Focus Duration',
-            style: TextStyle(fontSize: 18),
+            style: TextStyle(fontSize: 18, color: Colors.white70),
           ),
 
           const SizedBox(height: 12),
@@ -181,7 +189,7 @@ class _TimerScreenState extends State<TimerScreen> {
             'Custom Duration',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.deepPurple,
+              color: Colors.white70,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -197,15 +205,34 @@ class _TimerScreenState extends State<TimerScreen> {
                   controller: customController,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
                     hintText: 'Min',
-                    border: OutlineInputBorder(),
+                    hintStyle: const TextStyle(color: Colors.white38),
+                    filled: true,
+                    fillColor: const Color(0xFF1C1C1E),
+                    border: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.white24),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.white24),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.deepPurple.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
               ElevatedButton(
                 onPressed: setCustomTime,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple.shade300,
+                  foregroundColor: Colors.white,
+                ),
                 child: const Text('Set'),
               ),
             ],
@@ -242,6 +269,7 @@ class _TimerScreenState extends State<TimerScreen> {
                   style: const TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -256,6 +284,12 @@ class _TimerScreenState extends State<TimerScreen> {
               ElevatedButton(
                 onPressed:
                     timer != null && timer!.isActive ? null : startTimer,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple.shade300,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.white12,
+                  disabledForegroundColor: Colors.white38,
+                ),
                 child: const Text('Start Session'),
               ),
               const SizedBox(width: 12),
@@ -264,11 +298,19 @@ class _TimerScreenState extends State<TimerScreen> {
                     timer != null && timer!.isActive
                         ? confirmEndSession
                         : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple.shade300,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.white12,
+                  disabledForegroundColor: Colors.white38,
+                ),
                 child: const Text('End Session'),
               ),
             ],
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
