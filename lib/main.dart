@@ -5,6 +5,7 @@ import 'screens/settings_screen.dart';
 import 'screens/timer_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
+import 'screens/progress_screen.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
+
   final String title;
 
   @override
@@ -88,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const Center(child: AudioPlayerWidget()),
                 const TimerScreen(),
-                const Center(child: Text('Journey Tab Data')),
+                ProgressScreen(),
               ],
             ),
           );

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import '../data/session_store.dart';
+import '../models/focus_session.dart';
+
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
 
@@ -27,6 +30,19 @@ class _TimerScreenState extends State<TimerScreen> {
     return remainingSeconds / totalSeconds;
   }
 
+  void saveCompletedSession(int minutes) {
+    final updatedSessions = List<FocusSession>.from(focusSessionsNotifier.value);
+
+    updatedSessions.add(
+      FocusSession(
+        durationMinutes: minutes,
+        completedAt: DateTime.now(),
+      ),
+    );
+
+    focusSessionsNotifier.value = updatedSessions;
+  }
+
   void startTimer() {
     if (timer != null && timer!.isActive) return;
 
@@ -37,6 +53,8 @@ class _TimerScreenState extends State<TimerScreen> {
         setState(() {
           remainingSeconds = 0;
         });
+
+        saveCompletedSession(selectedMinutes);
 
         showDialog(
           context: context,
@@ -66,11 +84,18 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   void endSession() {
-    timer?.cancel();
-    setState(() {
-      remainingSeconds = selectedMinutes * 60;
-      totalSeconds = selectedMinutes * 60;
-    });
+  timer?.cancel();
+
+  int completedMinutes = (totalSeconds - remainingSeconds) ~/ 60;
+
+  if (completedMinutes > 0) {
+    saveCompletedSession(completedMinutes);
+  }
+
+  setState(() {
+    remainingSeconds = selectedMinutes * 60;
+    totalSeconds = selectedMinutes * 60;
+  });
   }
 
   void confirmEndSession() {
@@ -177,6 +202,7 @@ class _TimerScreenState extends State<TimerScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              durationButton(1),
               durationButton(15),
               durationButton(25),
               durationButton(45),
