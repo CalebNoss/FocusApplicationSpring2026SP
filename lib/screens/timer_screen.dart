@@ -3,6 +3,7 @@ import 'dart:async';
 
 import '../data/session_store.dart';
 import '../models/focus_session.dart';
+import '../native.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -17,6 +18,10 @@ class _TimerScreenState extends State<TimerScreen> {
   int totalSeconds = 25 * 60;
   Timer? timer;
 
+  late Timer _backgroundTimer;
+  bool isRunning = false;
+
+  final native = NativeBindings();
   final TextEditingController customController = TextEditingController();
 
   String get timeText {
@@ -45,6 +50,9 @@ class _TimerScreenState extends State<TimerScreen> {
 
   void startTimer() {
     if (timer != null && timer!.isActive) return;
+
+    isRunning = true;
+    native.callRunStart();
 
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (remainingSeconds <= 1) {
@@ -85,6 +93,9 @@ class _TimerScreenState extends State<TimerScreen> {
 
   void endSession() {
   timer?.cancel();
+
+  isRunning = false;
+  native.callRunEnd();
 
   int completedMinutes = (totalSeconds - remainingSeconds) ~/ 60;
 
@@ -150,10 +161,24 @@ class _TimerScreenState extends State<TimerScreen> {
     customController.clear();
   }
 
+    void runDistractionCheck() {
+    if (isRunning) {
+      native.callRunMiddle();
+    }
+  }
+
+  @override
+  void initState() {
+        super.initState();
+        _backgroundTimer = Timer.periodic(Duration(seconds: 1), (_) => runDistractionCheck());
+  }
+
+
   @override
   void dispose() {
     timer?.cancel();
     customController.dispose();
+    _backgroundTimer.cancel();
     super.dispose();
   }
 

@@ -51,26 +51,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late Timer _backgroundTimer;
-  bool isRunning = false;
-
-
 
   @override
   void initState() {
     super.initState();
-    _backgroundTimer = Timer.periodic(Duration(seconds: 1), (_) => runCheck());
-  }
-
-  void runCheck() {
-    if (isRunning) {
-      native.callRunMiddle(controller.text);
-    }
   }
 
   @override
   void dispose() {
-    _backgroundTimer.cancel();
     super.dispose();
   }
 

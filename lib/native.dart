@@ -2,14 +2,14 @@ import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'package:ffi/ffi.dart';
 
-typedef RunStartNative = ffi.Void Function(ffi.Pointer<Utf8> text);
-typedef RunStartDart = void Function(ffi.Pointer<Utf8> text);
+typedef RunStartNative = ffi.Void Function();
+typedef RunStartDart = void Function();
 
-typedef RunMiddleNative = ffi.Void Function(ffi.Pointer<Utf8> text);
-typedef RunMiddleDart = void Function(ffi.Pointer<Utf8> text);
+typedef RunMiddleNative = ffi.Void Function();
+typedef RunMiddleDart = void Function();
 
-typedef RunEndNative = ffi.Void Function(ffi.Pointer<Utf8> text);
-typedef RunEndDart = void Function(ffi.Pointer<Utf8> text);
+typedef RunEndNative = ffi.Void Function();
+typedef RunEndDart = void Function();
 
 class NativeBindings {
   late final RunStartDart RunStart;
@@ -32,20 +32,14 @@ class NativeBindings {
     );
   }
 
-  void callRunStart(String text) {
-    final ptr = text.toNativeUtf8();    // Dart string -> C++ const char*
-    RunStart(ptr);                      //call C++ function
-    malloc.free(ptr);                   //free memory
+  void callRunStart() {
+    RunStart();                      //call C++ function
   }
-  void callRunMiddle(String text) {
-    final ptr = text.toNativeUtf8();    // Dart string -> C++ const char*
-    RunMiddle(ptr);                      //call C++ function
-    malloc.free(ptr);                   //free memory
+  void callRunMiddle() {
+    RunMiddle();                      //call C++ function
   }
-  void callRunEnd(String text) {
-    final ptr = text.toNativeUtf8();    // Dart string -> C++ const char*
-    RunEnd(ptr);                      //call C++ function
-    malloc.free(ptr);                   //free memory
+  void callRunEnd() {
+    RunEnd();                      //call C++ function
   }
 
 }
