@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'native.dart';
+import 'dart:async';
 import 'audio_player_widget.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
@@ -20,9 +22,11 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
+final native = NativeBindings();
+final controller = TextEditingController();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -47,6 +51,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late Timer _backgroundTimer;
+  bool isRunning = false;
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    _backgroundTimer = Timer.periodic(Duration(seconds: 1), (_) => runCheck());
+  }
+
+  void runCheck() {
+    if (isRunning) {
+      native.callRunMiddle(controller.text);
+    }
+  }
+
+  @override
+  void dispose() {
+    _backgroundTimer.cancel();
+    super.dispose();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
