@@ -1,8 +1,0 @@
-main.cpp - focus - Visual Studio Code: 854,260 26,996
-flutter_application_1: 10,815,206 28,604
-ChatGPT - Google Chrome: 1,181,614 22,308
-Downloads - File Explorer: 4,654,262 13,628
-[my notion]: 66,598 13,980
-Settings: 132,444 13,884
-Settings: 132,422 4,672
-Windows Input Experience: 131,962 15,044

@@ -1,4 +1,0 @@
-Notepad: 6,031,062 19,360
-*defmodule Turtle do - Notepad: 3,344,702 23,800
-Notepad: 2,033,600 28,620
-Snipping Tool Overlay: 1,771,392 12,184

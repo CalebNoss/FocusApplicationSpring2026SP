@@ -1,2 +1,2 @@
-Notepad: 3
-Snipping Tool Overlay: 1
+Notepad: 7
+Snipping Tool Overlay: 2
