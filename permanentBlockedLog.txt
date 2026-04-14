@@ -1,0 +1,2 @@
+Notepad: 1
+Snipping Tool Overlay: 1

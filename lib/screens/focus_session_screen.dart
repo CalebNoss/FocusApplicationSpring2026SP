@@ -124,19 +124,23 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
           Container(color: Colors.black.withOpacity(0.45)),
 
           // Full timer — hidden when minimized
-          if (!_timerMinimized)
-            SingleChildScrollView(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: Center(
-                  child: TimerScreen(
-                    experience: widget.experience,
-                    onMinimize: () => setState(() => _timerMinimized = true),
-                  ),
-                ),
-              ),
-            ),
+          Visibility(
+  visible: !_timerMinimized,
+  maintainState: true,
+  maintainAnimation: true,
+  maintainSize: true,
+  child: SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Center(
+        child: TimerScreen(
+          experience: widget.experience,
+          onMinimize: () => setState(() => _timerMinimized = true),
+        ),
+      ),
+    ),
+  ),
+),
 
           // Audio side panel — hidden when minimized
           if (!_timerMinimized)
