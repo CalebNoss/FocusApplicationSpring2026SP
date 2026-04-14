@@ -2,29 +2,12 @@ import 'package:flutter/material.dart';
 import 'screens/focus_session_screen.dart';
 import 'screens/progress_screen.dart';
 import 'screens/settings_screen.dart';
-import 'widgets/audio_controls_side_panel.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  bool _audioPanelOpen = false;
-
-  void _toggleAudioPanel() {
-    setState(() => _audioPanelOpen = !_audioPanelOpen);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final panelWidth =
-        (MediaQuery.of(context).size.width * 0.28).clamp(280.0, 360.0);
-    final panelTopPadding =
-        kToolbarHeight + MediaQuery.of(context).padding.top;
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -33,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   'Focus',
                   style: TextStyle(
                     color: Colors.white,
@@ -41,8 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   'Choose your experience',
                   style: TextStyle(
                     color: Colors.white,
@@ -50,43 +33,43 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.normal,
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _CardWidget(
-                      title: 'Deep Dive',
-                      subtitle: 'Submerge into calm depths',
-                      color: Colors.blueAccent,
-                      icon: Icons.water_outlined,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => FocusSessionScreen(experience: 'Deep Dive'),
-                        ),
-                      ),
-                    ),
-                    _CardWidget(
-                      title: 'Trail Walk',
-                      subtitle: 'Wander through natural paths',
-                      color: Color(0xFF3fe882),
-                      icon: Icons.explore_outlined,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => FocusSessionScreen(experience: 'Trail Walk'),
-                        ),
-                      ),
-                    ),
-                    _CardWidget(
-                      title: 'Peak Ascent',
+                      title: 'Mountain Climb',
                       subtitle: 'Rise to elevated heights',
-                      color: Color(0xFF9fa4cf),
+                      color: const Color(0xFF9fa4cf),
                       icon: Icons.landscape_outlined,
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => FocusSessionScreen(experience: 'Peak Ascent'),
+                          builder: (_) => FocusSessionScreen(experience: 'Mountain Climb'),
+                        ),
+                      ),
+                    ),
+                    _CardWidget(
+                      title: 'Coffeeshop',
+                      subtitle: 'Settle into warm ambiance',
+                      color: const Color(0xFFb5651d),
+                      icon: Icons.local_cafe_outlined,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FocusSessionScreen(experience: 'Coffeeshop'),
+                        ),
+                      ),
+                    ),
+                    _CardWidget(
+                      title: 'Train Ride',
+                      subtitle: 'Glide through passing scenery',
+                      color: const Color(0xFF4a90d9),
+                      icon: Icons.train_outlined,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FocusSessionScreen(experience: 'Train Ride'),
                         ),
                       ),
                     ),
@@ -95,12 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          AudioControlsSidePanel(
-            isOpen: _audioPanelOpen,
-            panelWidth: panelWidth,
-            topPadding: panelTopPadding,
-          ),
-          // Top-right button row — rendered last so always on top of panel
+          // Top-right button row
           SafeArea(
             child: Align(
               alignment: Alignment.topRight,
@@ -115,10 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         MaterialPageRoute(builder: (_) => ProgressScreen()),
                       );
                     },
-                  ),
-                  AudioToggleButton(
-                    isOpen: _audioPanelOpen,
-                    onPressed: _toggleAudioPanel,
                   ),
                   IconButton(
                     icon: const Icon(Icons.settings, color: Colors.white),
@@ -192,20 +166,20 @@ class _CardWidgetState extends State<_CardWidget> {
                 backgroundColor: widget.color,
                 child: Icon(widget.icon, color: Colors.white, size: 28),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
                 widget.title,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 widget.subtitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
