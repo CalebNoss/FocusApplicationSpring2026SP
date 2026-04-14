@@ -70,6 +70,8 @@ flutter:
     - assets/audio/
     - assets/videos/coffeeshop.mp4
     - assets/videos/mountainclimb.mp4
+    - assets/videos/trainride.mp4
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

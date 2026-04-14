@@ -5,6 +5,9 @@ import '../data/session_store.dart';
 import '../models/focus_session.dart';
 import '../native.dart';
 
+// MUST already exist in FocusSessionScreen file
+import 'focus_session_screen.dart' show timerTextNotifier;
+
 class TimerScreen extends StatefulWidget {
   final String experience;
   final VoidCallback? onMinimize;
@@ -24,8 +27,8 @@ class _TimerScreenState extends State<TimerScreen>
   int selectedMinutes = 25;
   int remainingSeconds = 25 * 60;
   int totalSeconds = 25 * 60;
-  Timer? timer;
 
+  Timer? timer;
   late Timer _backgroundTimer;
   bool isRunning = false;
 
@@ -34,7 +37,7 @@ class _TimerScreenState extends State<TimerScreen>
   final native = NativeBindings();
   final TextEditingController customController = TextEditingController();
 
-  // ───────────────────────── COLORS ─────────────────────────
+  // ───────── COLORS ─────────
 
   Color get _accentColor {
     switch (widget.experience) {
@@ -43,51 +46,24 @@ class _TimerScreenState extends State<TimerScreen>
       case 'Mountain Climb':
         return const Color(0xFF1A3A5C);
       default:
-        return Colors.deepPurple.shade300;
+        return Colors.black;
     }
   }
 
-  Color get _accentLight {
-    switch (widget.experience) {
-      case 'Coffeeshop':
-        return const Color(0xFFD4A96A).withOpacity(0.3);
-      case 'Mountain Climb':
-        return const Color(0xFF2E6DA4).withOpacity(0.3);
-      default:
-        return Colors.deepPurple.shade100;
-    }
-  }
+  Color get _accentLight => _accentColor.withOpacity(0.25);
 
-  // ───────────────────────── TIMER TEXT ─────────────────────────
+  // ───────── TIMER TEXT ─────────
 
   String get timeText {
-    final minutes = remainingSeconds ~/ 60;
-    final seconds = remainingSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    final m = remainingSeconds ~/ 60;
+    final s = remainingSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
-  double get progress {
-    if (totalSeconds == 0) return 0;
-    return remainingSeconds / totalSeconds;
-  }
+  double get progress =>
+      totalSeconds == 0 ? 0 : remainingSeconds / totalSeconds;
 
-  // ───────────────────────── SESSION SAVE ─────────────────────────
-
-  void saveCompletedSession(int minutes) {
-    final updatedSessions =
-        List<FocusSession>.from(focusSessionsNotifier.value);
-
-    updatedSessions.add(
-      FocusSession(
-        durationMinutes: minutes,
-        completedAt: DateTime.now(),
-      ),
-    );
-
-    focusSessionsNotifier.value = updatedSessions;
-  }
-
-  // ───────────────────────── TIMER ─────────────────────────
+  // ───────── TIMER LOGIC ─────────
 
   void startTimer() {
     if (timer != null && timer!.isActive) return;
@@ -98,80 +74,52 @@ class _TimerScreenState extends State<TimerScreen>
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (remainingSeconds <= 1) {
         t.cancel();
-
-        setState(() => remainingSeconds = 0);
-
-        saveCompletedSession(selectedMinutes);
-
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF1C1C1E),
-            title: const Text(
-              'Focus Session Complete',
-              style: TextStyle(color: Colors.white),
-            ),
-            content: const Text(
-              'Great job staying focused!',
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  endSession();
-                },
-                child: Text(
-                  'Close',
-                  style: TextStyle(color: _accentColor),
-                ),
-              ),
-            ],
-          ),
-        );
+        _endSession();
         return;
       }
 
       setState(() {
         remainingSeconds--;
-        timerTextNotifier.value = timeText;
       });
 
+      timerTextNotifier.value = timeText; // ✅ SYNC FIX
       native.callRunMiddle();
     });
   }
 
-  void endSession() {
+  void _endSession() {
     timer?.cancel();
     isRunning = false;
     native.callRunEnd();
 
-    int completedMinutes =
+    final completed =
         (totalSeconds - remainingSeconds) ~/ 60;
 
-    if (completedMinutes > 0) {
-      saveCompletedSession(completedMinutes);
+    if (completed > 0) {
+      final updated =
+          List<FocusSession>.from(focusSessionsNotifier.value);
+
+      updated.add(FocusSession(
+        durationMinutes: completed,
+        completedAt: DateTime.now(),
+      ));
+
+      focusSessionsNotifier.value = updated;
     }
 
-    setState(() {
-      remainingSeconds = selectedMinutes * 60;
-      totalSeconds = selectedMinutes * 60;
-      timerTextNotifier.value = timeText;
-    });
+    timerTextNotifier.value = timeText; // ✅ SYNC FIX
+
+    Navigator.of(context).pop();
   }
 
   void confirmEndSession() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
         title: const Text(
-          'End Focus Session?',
+          'End Session?',
           style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'Are you sure you want to end your session early?',
-          style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
@@ -182,7 +130,7 @@ class _TimerScreenState extends State<TimerScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              endSession();
+              _endSession();
             },
             child: Text('Yes',
                 style: TextStyle(color: _accentColor)),
@@ -192,22 +140,51 @@ class _TimerScreenState extends State<TimerScreen>
     );
   }
 
-  // ───────────────────────── INIT ─────────────────────────
+  // ───────── SETTINGS ─────────
+
+  void selectDuration(int minutes) {
+    timer?.cancel();
+    setState(() {
+      selectedMinutes = minutes;
+      remainingSeconds = minutes * 60;
+      totalSeconds = minutes * 60;
+    });
+
+    timerTextNotifier.value = timeText; // ✅ SYNC FIX
+  }
+
+  void setCustomTime() {
+    final input = int.tryParse(customController.text);
+    if (input == null || input <= 0) return;
+
+    timer?.cancel();
+    setState(() {
+      selectedMinutes = input;
+      remainingSeconds = input * 60;
+      totalSeconds = input * 60;
+    });
+
+    timerTextNotifier.value = timeText; // ✅ SYNC FIX
+    customController.clear();
+  }
 
   void runDistractionCheck() {
     if (isRunning) native.callRunMiddle();
   }
 
+  // ───────── INIT / DISPOSE ─────────
+
   @override
   void initState() {
     super.initState();
+
+    timerTextNotifier.value = timeText; // ✅ INITIAL SYNC
 
     _backgroundTimer =
         Timer.periodic(const Duration(seconds: 1), (_) {
       runDistractionCheck();
     });
 
-    // 🔥 glow animation
     _glowController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -223,7 +200,25 @@ class _TimerScreenState extends State<TimerScreen>
     super.dispose();
   }
 
-  // ───────────────────────── UI ─────────────────────────
+  // ───────── UI ─────────
+
+  Widget durationButton(int minutes) {
+    final selected = selectedMinutes == minutes;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: ElevatedButton(
+        onPressed: () => selectDuration(minutes),
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              selected ? _accentColor : const Color(0xFF1C1C1E),
+          foregroundColor:
+              selected ? Colors.white : Colors.white70,
+        ),
+        child: Text('$minutes min'),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -251,8 +246,10 @@ class _TimerScreenState extends State<TimerScreen>
                   const Spacer(),
                   if (widget.onMinimize != null)
                     IconButton(
-                      icon: const Icon(Icons.picture_in_picture_alt,
-                          color: Colors.white70),
+                      icon: const Icon(
+                        Icons.picture_in_picture_alt,
+                        color: Colors.white70,
+                      ),
                       onPressed: widget.onMinimize,
                     ),
                 ],
@@ -262,18 +259,61 @@ class _TimerScreenState extends State<TimerScreen>
 
               const Text(
                 'Select Focus Duration',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white70,
-                ),
+                style: TextStyle(color: Colors.white70),
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  durationButton(1),
+                  durationButton(15),
+                  durationButton(25),
+                  durationButton(45),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 80,
+                    child: TextField(
+                      controller: customController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        hintText: 'Min',
+                        hintStyle:
+                            TextStyle(color: Colors.white38),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.white24),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: setCustomTime,
+                    child: const Text('Set'),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 30),
 
-              // 🔥 GLOWING CIRCLE (NEW)
               AnimatedBuilder(
                 animation: _glowController,
-                builder: (context, child) {
+                builder: (context, _) {
                   return Container(
                     width: 230,
                     height: 230,
@@ -282,9 +322,11 @@ class _TimerScreenState extends State<TimerScreen>
                       boxShadow: [
                         BoxShadow(
                           color: _accentColor.withOpacity(
-                            0.25 + (_glowController.value * 0.2),
+                            0.20 +
+                                (_glowController.value * 0.25),
                           ),
-                          blurRadius: 25 + (_glowController.value * 15),
+                          blurRadius:
+                              20 + (_glowController.value * 18),
                           spreadRadius: 2,
                         ),
                       ],
@@ -293,8 +335,8 @@ class _TimerScreenState extends State<TimerScreen>
                       alignment: Alignment.center,
                       children: [
                         SizedBox(
-                          width: 220,
-                          height: 220,
+                          width: 230,
+                          height: 230,
                           child: CircularProgressIndicator(
                             value: progress,
                             strokeWidth: 8,
