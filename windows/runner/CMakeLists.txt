@@ -16,6 +16,17 @@ add_executable(${BINARY_NAME} WIN32
   "runner.exe.manifest"
 )
 
+# Set path to C++ DLL
+set(FOCUSAPPLIBRARY_DLL "${CMAKE_SOURCE_DIR}/../native/lib/FocusAppLibrary.dll")
+
+# Copy DLL into the output folder for both Debug and Release
+add_custom_command(
+    TARGET ${BINARY_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${FOCUSAPPLIBRARY_DLL}"
+        "$<TARGET_FILE_DIR:${BINARY_NAME}>"
+)
+
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})
