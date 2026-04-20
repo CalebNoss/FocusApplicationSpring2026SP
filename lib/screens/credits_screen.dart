@@ -48,30 +48,80 @@ class CreditsScreen extends StatelessWidget {
       ),
     ];
 
+    final tabs = [
+      ...members.map((m) => Tab(text: m.name)),
+      const Tab(text: 'Third Party'),
+    ];
+
     return DefaultTabController(
-      length: members.length,
+      length: tabs.length,
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.black,
           iconTheme: const IconThemeData(color: Colors.white),
-          title: const Text('Project Team', style: TextStyle(color: Colors.white)),
+          title: const Text('Credits', style: TextStyle(color: Colors.white)),
           bottom: TabBar(
             isScrollable: true,
             indicatorColor: Colors.white,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white54,
-            tabs: members.map((member) => Tab(text: member.name)).toList(),
+            tabs: tabs,
           ),
         ),
         body: TabBarView(
-          children: members
-              .map(
-                (member) => _TeamMemberTab(member: member),
-              )
-              .toList(),
+          children: [
+            ...members.map((member) => _TeamMemberTab(member: member)),
+            const _ThirdPartyTab(),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _ThirdPartyTab extends StatelessWidget {
+  const _ThirdPartyTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C1C1E),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Column(
+            children: [
+              ListTile(
+                leading: Icon(Icons.video_library_outlined, color: Colors.white),
+                title: Text(
+                  'Canva',
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  'Video experiences (background videos)',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+              Divider(height: 1, color: Colors.white12),
+              ListTile(
+                leading: Icon(Icons.link, color: Colors.white54),
+                title: Text(
+                  'canva.com',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                subtitle: Text(
+                  '© Canva — used under Canva\'s Content License',
+                  style: TextStyle(color: Colors.white38),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

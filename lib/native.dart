@@ -31,13 +31,14 @@ class NativeBindings {
   }
 
   void callRunStart() {
-    RunStart();                      //call C++ function
-  }
-  void callRunMiddle() {
-    RunMiddle();                      //call C++ function
-  }
-  void callRunEnd() {
-    RunEnd();                      //call C++ function
+    RunStart();
   }
 
+  void callRunMiddle() {
+    RunMiddle();
+  }
+
+  void callRunEnd() {
+    RunEnd();
+  }
 }

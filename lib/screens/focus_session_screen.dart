@@ -24,19 +24,21 @@ class FocusSessionScreen extends StatefulWidget {
 class _FocusSessionScreenState extends State<FocusSessionScreen> {
   bool _audioPanelOpen = false;
   bool _timerMinimized = false;
+  bool _videoReady = false;
+  final GlobalKey<TimerScreenState> _timerKey = GlobalKey<TimerScreenState>();
   late final Player _player;
   late final VideoController _videoController;
 
   String _videoAssetForExperience(String experience) {
     switch (experience) {
       case 'Coffeeshop':
-        return 'asset:///assets/videos/coffeeshop.mp4';
+        return 'asset:///assets/videos/coffeeshop_lite.mp4';
       case 'Mountain Climb':
-        return 'asset:///assets/videos/mountainclimb.mp4';
+        return 'asset:///assets/videos/mountainclimb_lite.mp4';
       case 'Train Ride':
-        return 'asset:///assets/videos/trainride.mp4';
+        return 'asset:///assets/videos/trainride_lite.mp4';
       default:
-        return 'asset:///assets/videos/coffeeshop.mp4';
+        return 'asset:///assets/videos/coffeeshop_lite.mp4';
     }
   }
 
@@ -55,10 +57,24 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
   void initState() {
     super.initState();
     _player = Player();
-    _videoController = VideoController(_player);
-    _player.open(Media(_videoAssetForExperience(widget.experience)));
-    _player.setVolume(0);
-    _player.setPlaylistMode(PlaylistMode.loop);
+    _videoController = VideoController(
+      _player,
+      configuration: const VideoControllerConfiguration(
+        // Keep native embedded renderer defaults to avoid detached/external windows.
+        hwdec: 'auto-safe',
+        scale: 0.5,
+      ),
+    );
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    await _player.setVolume(0);
+    await _player.setPlaylistMode(PlaylistMode.loop);
+    await _player.open(Media(_videoAssetForExperience(widget.experience)));
+    await _videoController.waitUntilFirstFrameRendered;
+    if (!mounted) return;
+    setState(() => _videoReady = true);
   }
 
   @override
@@ -69,6 +85,15 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
 
   void _toggleAudioPanel() =>
       setState(() => _audioPanelOpen = !_audioPanelOpen);
+
+  void _handleBackPressed() {
+    final timerState = _timerKey.currentState;
+    if (timerState == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    timerState.confirmEndSession();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +109,11 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
               title: Text(
                 widget.experience,
                 style: const TextStyle(color: Colors.white),
+              ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                tooltip: 'Back',
+                onPressed: _handleBackPressed,
               ),
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -114,33 +144,45 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
         children: [
           // Background video
           Positioned.fill(
-            child: Video(
-              controller: _videoController,
-              fit: BoxFit.cover,
+            child: RepaintBoundary(
+              child: _videoReady
+                  ? Video(
+                      controller: _videoController,
+                      fit: BoxFit.cover,
+                      controls: NoVideoControls,
+                      filterQuality: FilterQuality.none,
+                    )
+                  : const ColoredBox(color: Colors.black),
             ),
           ),
 
           // Dark overlay
-          Container(color: Colors.black.withOpacity(0.45)),
+          RepaintBoundary(
+            child: Container(color: Colors.black.withValues(alpha: 0.45)),
+          ),
 
           // Full timer — hidden when minimized
           Visibility(
-  visible: !_timerMinimized,
-  maintainState: true,
-  maintainAnimation: true,
-  maintainSize: true,
-  child: SingleChildScrollView(
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Center(
-        child: TimerScreen(
-          experience: widget.experience,
-          onMinimize: () => setState(() => _timerMinimized = true),
-        ),
-      ),
-    ),
-  ),
-),
+            visible: !_timerMinimized,
+            maintainState: true,
+            maintainAnimation: true,
+            maintainSize: true,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                child: Center(
+                  child: RepaintBoundary(
+                    child: TimerScreen(
+                      key: _timerKey,
+                      experience: widget.experience,
+                      onMinimize: () => setState(() => _timerMinimized = true),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
 
           // Audio side panel — hidden when minimized
           if (!_timerMinimized)
@@ -162,7 +204,7 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.75),
+                      color: Colors.black.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(32),
                       border: Border.all(color: _accentColor, width: 2),
                     ),

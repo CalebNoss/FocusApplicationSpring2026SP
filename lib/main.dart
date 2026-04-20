@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
-import 'native.dart';
-import 'screens/settings_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
 
@@ -18,8 +16,6 @@ Future<void> main() async {
 
   runApp(const MyApp());
 }
-
-final native = NativeBindings();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -79,16 +79,6 @@ class SettingsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.person_outline, color: Colors.white),
-                    title: const Text('Account', style: TextStyle(color: Colors.white)),
-                    subtitle: const Text(
-                      'Manage your account preferences',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                    trailing: const Icon(Icons.lock_outline, color: Colors.white38),
-                  ),
-                  const Divider(height: 1, color: Colors.white12),
-                  ListTile(
                     leading: const Icon(Icons.speaker_outlined, color: Colors.white),
                     title: const Text('Audio Output', style: TextStyle(color: Colors.white)),
                     subtitle: Text(
@@ -103,9 +93,9 @@ class SettingsScreen extends StatelessWidget {
                   const Divider(height: 1, color: Colors.white12),
                   ListTile(
                     leading: const Icon(Icons.workspace_premium_outlined, color: Colors.white),
-                    title: const Text('Project Team', style: TextStyle(color: Colors.white)),
+                    title: const Text('Credits', style: TextStyle(color: Colors.white)),
                     subtitle: const Text(
-                      'View each member\'s contributions',
+                      'Project team and third-party attributions',
                       style: TextStyle(color: Colors.white70),
                     ),
                     trailing: const Icon(Icons.chevron_right, color: Colors.white70),

@@ -1,2 +1,3 @@
-Notepad: 7
-Snipping Tool Overlay: 2
+Microsoft Store: 6
+Microsoft​ Edge: 2
+File Explorer: 7
