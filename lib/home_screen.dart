@@ -45,7 +45,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => FocusSessionScreen(experience: 'Mountain Climb'),
+                          builder: (_) => const FocusSessionScreen(experience: 'Mountain Climb'),
                         ),
                       ),
                     ),
@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => FocusSessionScreen(experience: 'Coffeeshop'),
+                          builder: (_) => const FocusSessionScreen(experience: 'Coffeeshop'),
                         ),
                       ),
                     ),
@@ -69,7 +69,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => FocusSessionScreen(experience: 'Train Ride'),
+                          builder: (_) => const FocusSessionScreen(experience: 'Train Ride'),
                         ),
                       ),
                     ),

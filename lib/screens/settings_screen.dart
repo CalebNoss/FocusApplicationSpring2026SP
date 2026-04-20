@@ -81,11 +81,11 @@ class SettingsScreen extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.speaker_outlined, color: Colors.white),
                     title: const Text('Audio Output', style: TextStyle(color: Colors.white)),
-                    subtitle: Text(
+                    subtitle: const Text(
                       kIsWeb
                           ? 'Open browser audio settings'
                           : 'Open system sound settings',
-                      style: const TextStyle(color: Colors.white70),
+                      style: TextStyle(color: Colors.white70),
                     ),
                     trailing: const Icon(Icons.open_in_new, color: Colors.white70),
                     onTap: () => _openAudioSettings(context),
@@ -94,10 +94,7 @@ class SettingsScreen extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.workspace_premium_outlined, color: Colors.white),
                     title: const Text('Credits', style: TextStyle(color: Colors.white)),
-                    subtitle: const Text(
-                      'Project team and third-party attributions',
-                      style: TextStyle(color: Colors.white70),
-                    ),
+                    subtitle: const Text('Asset credits', style: TextStyle(color: Colors.white70)),
                     trailing: const Icon(Icons.chevron_right, color: Colors.white70),
                     onTap: () {
                       Navigator.of(context).push(

@@ -62,7 +62,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final audios = AudioService.audios;
+    const audios = AudioService.audios;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

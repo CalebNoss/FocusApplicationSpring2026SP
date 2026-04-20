@@ -20,7 +20,8 @@ class TimerScreen extends StatefulWidget {
   State<TimerScreen> createState() => TimerScreenState();
 }
 
-class TimerScreenState extends State<TimerScreen> {
+class TimerScreenState extends State<TimerScreen>
+    with SingleTickerProviderStateMixin {
   // Blocking is enabled, but native checks are throttled to reduce UI jank.
   static const bool _enableNativeBlocking = true;
   static const Duration _nativeCheckInterval = Duration(seconds: 4);
@@ -37,6 +38,7 @@ class TimerScreenState extends State<TimerScreen> {
   NativeBindings? _native;
   final TextEditingController customController = TextEditingController();
   final ValueNotifier<int> _remainingSecondsNotifier = ValueNotifier(25 * 60);
+  late final AnimationController _glowController;
 
   static String _formatTime(int totalSeconds) {
     final minutes = totalSeconds ~/ 60;
@@ -256,12 +258,17 @@ class TimerScreenState extends State<TimerScreen> {
   void initState() {
     super.initState();
     _setRemainingSeconds(remainingSeconds);
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
     timer?.cancel();
     _stopNativeBlocking();
+    _glowController.dispose();
     _remainingSecondsNotifier.dispose();
     customController.dispose();
     super.dispose();
@@ -361,38 +368,49 @@ class TimerScreenState extends State<TimerScreen> {
                   final currentProgress =
                       totalSeconds == 0 ? 0.0 : seconds / totalSeconds;
 
-                  return Container(
-                    width: 230,
-                    height: 230,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: _accentColor.withValues(alpha: 0.30),
-                        width: 1.5,
+                  return AnimatedBuilder(
+                    animation: _glowController,
+                    builder: (_, __) => Container(
+                      width: 230,
+                      height: 230,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: _accentColor.withValues(alpha: 0.30),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _accentColor.withValues(
+                              alpha: 0.20 + (_glowController.value * 0.25),
+                            ),
+                            blurRadius: 20 + (_glowController.value * 18),
+                          ),
+                        ],
                       ),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(
-                          width: 230,
-                          height: 230,
-                          child: CircularProgressIndicator(
-                            value: currentProgress,
-                            strokeWidth: 8,
-                            backgroundColor: _accentLight,
-                            valueColor: AlwaysStoppedAnimation(_accentColor),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 230,
+                            height: 230,
+                            child: CircularProgressIndicator(
+                              value: currentProgress,
+                              strokeWidth: 8,
+                              backgroundColor: _accentLight,
+                              valueColor: AlwaysStoppedAnimation(_accentColor),
+                            ),
                           ),
-                        ),
-                        Text(
-                          _formatTime(seconds),
-                          style: const TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          Text(
+                            _formatTime(seconds),
+                            style: const TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
