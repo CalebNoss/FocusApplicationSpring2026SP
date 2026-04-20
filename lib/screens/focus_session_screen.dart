@@ -32,13 +32,13 @@ class _FocusSessionScreenState extends State<FocusSessionScreen> {
   String _videoAssetForExperience(String experience) {
     switch (experience) {
       case 'Coffeeshop':
-        return 'asset:///assets/videos/coffeeshop_lite.mp4';
+        return 'asset:///assets/videos/coffeeshop.mp4';
       case 'Mountain Climb':
-        return 'asset:///assets/videos/mountainclimb_lite.mp4';
+        return 'asset:///assets/videos/mountainclimb.mp4';
       case 'Train Ride':
-        return 'asset:///assets/videos/trainride_lite.mp4';
+        return 'asset:///assets/videos/trainride.mp4';
       default:
-        return 'asset:///assets/videos/coffeeshop_lite.mp4';
+        return 'asset:///assets/videos/coffeeshop.mp4';
     }
   }
 
