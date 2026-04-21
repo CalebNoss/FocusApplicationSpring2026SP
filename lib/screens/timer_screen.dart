@@ -7,7 +7,6 @@ import '../models/focus_session.dart';
 import '../native.dart';
 import '../services/audio_service.dart';
 
-import 'focus_session_screen.dart' show timerTextNotifier;
 
 class TimerScreen extends StatefulWidget {
   final String experience;
