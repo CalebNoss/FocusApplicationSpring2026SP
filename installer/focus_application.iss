@@ -19,7 +19,7 @@ AppId={{A33B9B5D-4C84-48A9-9A77-39A12A6C1B69}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={autopf}\{#MyAppName}
+DefaultDirName={localappdata}\Programs\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=..\build\installer
@@ -42,11 +42,18 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 [Files]
 Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
+Source: "..\startingPrograms.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\currentSessionBlocked.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\permanentBlockedLog.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\programsLog1.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\programsLog2.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\BadProgramNoise.wav"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\*"; DestDir: "{app}\project_files"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "build\*,.git\*,.dart_tool\*,.idea\*,.vscode\*"
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Visual C++ Runtime..."; Flags: waituntilterminated
-Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent
