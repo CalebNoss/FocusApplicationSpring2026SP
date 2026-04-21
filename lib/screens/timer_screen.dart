@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:just_audio/just_audio.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -16,6 +17,8 @@ class _TimerScreenState extends State<TimerScreen> {
 
   final TextEditingController customController = TextEditingController();
 
+  final AudioPlayer _player = AudioPlayer();
+
   String get timeText {
     final minutes = remainingSeconds ~/ 60;
     final seconds = remainingSeconds % 60;
@@ -25,6 +28,11 @@ class _TimerScreenState extends State<TimerScreen> {
   double get progress {
     if (totalSeconds == 0) return 0;
     return remainingSeconds / totalSeconds;
+  }
+
+  Future<void> _playCompletionSound() async {
+    await _player.setAsset('assets/audio/FocusAppSuccess.wav');
+    _player.play();
   }
 
   void startTimer() {
@@ -37,6 +45,8 @@ class _TimerScreenState extends State<TimerScreen> {
         setState(() {
           remainingSeconds = 0;
         });
+
+        _playCompletionSound(); 
 
         showDialog(
           context: context,
@@ -127,6 +137,7 @@ class _TimerScreenState extends State<TimerScreen> {
   void dispose() {
     timer?.cancel();
     customController.dispose();
+    _player.dispose(); 
     super.dispose();
   }
 
