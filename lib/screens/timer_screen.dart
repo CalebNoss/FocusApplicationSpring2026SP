@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 import 'focus_session_screen.dart';
 import '../data/session_store.dart';
@@ -36,6 +37,8 @@ class _TimerScreenState extends State<TimerScreen>
   final native = NativeBindings();
   final TextEditingController customController = TextEditingController();
 
+  final AudioPlayer _player = AudioPlayer();
+
   Color get _accentColor {
     switch (widget.experience) {
       case 'Coffeeshop':
@@ -57,6 +60,12 @@ class _TimerScreenState extends State<TimerScreen>
 
   double get progress =>
       totalSeconds == 0 ? 0 : remainingSeconds / totalSeconds;
+
+  Future<void> _playCompletionSound() async {
+    await _player.setAsset('assets/audio/FocusAppSuccess.wav');
+    _player.play();
+  }
+
 
   // ───────── START TIMER ─────────
 
@@ -104,6 +113,8 @@ class _TimerScreenState extends State<TimerScreen>
     }
 
     timerTextNotifier.value = "00:00";
+
+    _playCompletionSound();
 
     if (!mounted) return;
 
@@ -236,6 +247,7 @@ class _TimerScreenState extends State<TimerScreen>
     _backgroundTimer.cancel();
     _glowController.dispose();
     customController.dispose();
+    _player.dispose();
     super.dispose();
   }
 
