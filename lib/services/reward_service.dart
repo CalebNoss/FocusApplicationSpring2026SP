@@ -9,16 +9,7 @@ class RewardService {
     RewardBadge(title: "Platinum Focus", requiredMinutes: 600),
   ];
 
-  List<RewardBadge> getUnlockedRewards(int totalMinutes) {
-
-    List<RewardBadge> unlocked = [];
-
-    for (final reward in rewards) {
-      if (totalMinutes >= reward.requiredMinutes) {
-        unlocked.add(reward);
-      }
-    }
-
-    return unlocked;
+  bool isUnlocked(RewardBadge reward, int totalMinutes) {
+    return totalMinutes >= reward.requiredMinutes;
   }
 }
