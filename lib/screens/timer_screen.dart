@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 import 'focus_session_screen.dart' show timerTextNotifier;
 import '../data/session_store.dart';
 import '../models/focus_session.dart';
 import '../native.dart';
 import '../services/audio_service.dart';
+
+import 'focus_session_screen.dart' show timerTextNotifier;
 
 class TimerScreen extends StatefulWidget {
   final String experience;
@@ -38,6 +41,7 @@ class TimerScreenState extends State<TimerScreen>
   NativeBindings? _native;
   final TextEditingController customController = TextEditingController();
   final ValueNotifier<int> _remainingSecondsNotifier = ValueNotifier(25 * 60);
+  final AudioPlayer _player = AudioPlayer();
   late final AnimationController _glowController;
 
   static String _formatTime(int totalSeconds) {
@@ -110,6 +114,11 @@ class TimerScreenState extends State<TimerScreen>
 
   String get timeText => _formatTime(remainingSeconds);
 
+  Future<void> _playCompletionSound() async {
+    await _player.setAsset('assets/audio/FocusAppSuccess.wav');
+    _player.play();
+  }
+  
   // ───────── START TIMER ─────────
 
   void startTimer() {
@@ -144,6 +153,8 @@ class TimerScreenState extends State<TimerScreen>
 
     _setRemainingSeconds(0);
 
+    _playCompletionSound();
+    
     if (!mounted) return;
 
     await showDialog(
@@ -274,6 +285,7 @@ class TimerScreenState extends State<TimerScreen>
     _glowController.dispose();
     _remainingSecondsNotifier.dispose();
     customController.dispose();
+    _player.dispose();
     super.dispose();
   }
 
