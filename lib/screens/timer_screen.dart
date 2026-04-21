@@ -114,7 +114,7 @@ class TimerScreenState extends State<TimerScreen>
   String get timeText => _formatTime(remainingSeconds);
 
   Future<void> _playCompletionSound() async {
-    await _player.setAsset('assets/audio/FocusAppSuccess.wav');
+    _player.seek(Duration.zero);
     _player.play();
   }
   
@@ -271,6 +271,7 @@ class TimerScreenState extends State<TimerScreen>
   void initState() {
     super.initState();
     _setRemainingSeconds(remainingSeconds);
+    await _player.setAsset('assets/audio/FocusAppSuccess.wav');
     _glowController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
