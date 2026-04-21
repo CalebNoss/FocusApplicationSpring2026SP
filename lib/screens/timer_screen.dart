@@ -118,7 +118,6 @@ class TimerScreenState extends State<TimerScreen>
     setState(() {
       isRunning = true;
     });
-    _startNativeBlocking();
 
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (remainingSeconds <= 1) {
@@ -129,6 +128,10 @@ class TimerScreenState extends State<TimerScreen>
 
       _setRemainingSeconds(remainingSeconds - 1);
     });
+
+    try {
+      _startNativeBlocking();
+    } catch (_) {}
   }
 
   // ───────── NATURAL COMPLETION ─────────

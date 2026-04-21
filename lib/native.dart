@@ -15,7 +15,15 @@ class NativeBindings {
   late final RunEndDart RunEnd;
 
   NativeBindings() {
-    final dll = ffi.DynamicLibrary.open("FocusAppLibrary.dll");
+    final ffi.DynamicLibrary dll;
+    try {
+      dll = ffi.DynamicLibrary.open("FocusAppLibrary.dll");
+    } catch (_) {
+      RunStart = () {};
+      RunMiddle = () {};
+      RunEnd = () {};
+      return;
+    }
 
     RunStart = dll.lookupFunction<RunStartNative, RunStartDart>(
       "RunStart",
