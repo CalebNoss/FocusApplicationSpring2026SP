@@ -11,7 +11,7 @@
 #endif
 
 #ifndef MyAppExeName
-#define MyAppExeName "flutter_application_1.exe"
+#define MyAppExeName "Focus App.exe"
 #endif
 
 [Setup]

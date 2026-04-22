@@ -16,6 +16,9 @@ add_executable(${BINARY_NAME} WIN32
   "runner.exe.manifest"
 )
 
+# Keep target name valid for CMake, but ship a user-friendly executable name.
+set_target_properties(${BINARY_NAME} PROPERTIES OUTPUT_NAME "Focus App")
+
 # Set path to C++ DLL
 set(FOCUSAPPLIBRARY_DLL "${CMAKE_SOURCE_DIR}/../native/lib/FocusAppLibrary.dll")
 
